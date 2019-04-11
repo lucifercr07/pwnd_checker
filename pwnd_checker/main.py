@@ -6,7 +6,8 @@ from breached_passwd import BreachedPassword
 
 url = 'https://haveibeenpwned.com/api/'
 api_version = '2'
-headers = {'api-version':api_version}
+headers = {'api-version':api_version,
+			  'user-agent':'pwnd_checker'}
 
 def get_response(api, headers):
 	response = requests.get(url + api, headers = headers)
@@ -58,7 +59,8 @@ def main(pwnd_account, pwnd_website, passwd):
 	elif pwnd_website:
 		breached_domain(pwnd_website)
 	elif passwd:
-		breached_pass_object = BreachedPassword(url, headers)	
+		breached_pass = BreachedPassword(headers)
+		breached_pass.check_passwd_breach(passwd)
 	else:
 		click.secho('Usage: passwd_checker.py --help', fg="red", bold=True)
 
