@@ -1,6 +1,7 @@
 import click
 import requests
 import json
+import time
 
 from breached_passwd import BreachedPassword
 
@@ -59,8 +60,27 @@ def main(pwnd_account, pwnd_website, passwd):
    elif pwnd_website:
       breached_domain(pwnd_website)
    elif passwd:
+      #TODO: make passwd input as hidden
       breached_pass = BreachedPassword(headers)
-      breached_pass.check_passwd_breach(passwd)
+      passwd_breach_count = breached_pass.check_passwd_breach(passwd)
+      if passwd_breach_count != 0:
+         sad_emoji = '\U0001F61E'
+         click.secho("OOPS!! Looks like your password has been breached", fg="red", bold=True)
+         click.secho("Times it appeared in the breach dataset: {0}".format(passwd_breach_count),
+                     fg="red", bold=True)
+         print sad_emoji.decode('unicode-escape')
+         #TODO: integrate with domain, i.e if email leaked dataset open email in browser with
+         #suggested pass and make the below part mandatory
+         if click.confirm('Do you want new password suggestion?'):
+            click.secho('Getting you new pass...', fg='green', bold=True)
+            time.sleep(1)
+            click.secho('Please use this secure pass: {0}'.format(breached_pass.get_new_passwd()),
+                        fg='green', bold=True)
+         else:
+            click.secho('Please change your password ASAP.', fg='red', bold=True)    
+      else:
+         #TODO: Add current pass strength check and provide suggestions based on that.
+         click.secho('Congrats!! Your passwords not been breached.', fg='green', bold=True)
    else:
       click.secho('Usage: passwd_checker.py --help', fg="red", bold=True)
 
