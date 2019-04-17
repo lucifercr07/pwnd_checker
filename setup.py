@@ -10,7 +10,7 @@ if os.environ.get('USER','') == 'vagrant':
 
 setup(
     name='pwnd_checker',
-    version='0.1',
+    version='0.0.1',
     description='Pwnd Checker',
     author='Prashant Shubham',
     license='MIT',
@@ -32,8 +32,8 @@ setup(
     packages=find_packages(),
     include_package_data = True,
     install_requires=[
-        "click>=5.0",
-        "requests==2.7.0"
+        "click==7.0",
+        "requests==2.20.1"
     ] + (["colorama==0.3.3"] if "win" in sys.platform else []),
     entry_points={
         'console_scripts': [
