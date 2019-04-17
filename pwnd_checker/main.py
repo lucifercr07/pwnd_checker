@@ -27,6 +27,7 @@ def breached_domain(pwnd_website):
       print "{0} has been breached. Details are following: \n".format(pwnd_website)
       json_response = json.loads(response_json.text)
       print "1. Breach date: {0}".format(json_response['BreachDate'])
+      #TODO: Fix Description printing
       print "2. Breach details: {0}\n".format(json_response['Description'])
       if json_response['IsSensitive']:
          print "3. Breach is sensitive. Please change your email if associated with this domain."
@@ -37,7 +38,7 @@ def breached_account(pwnd_account):
    try:
       response_json = get_response('breachedaccount/'+ pwnd_account, headers)
       if response_json is None:
-         print "Congrats!! Your account hasn't been breached yet."
+         click.secho("Congrats!! Your account hasn't been breached yet.", fg='green', bold=True)
          return 0
 
       print "Account has been breached at following domains: \n"
@@ -49,10 +50,24 @@ def breached_account(pwnd_account):
    except Exception as e:
       click.secho(str(e), fg="red", bold=True)
 
-@click.command()
+#class to handle optional args like: passwd
+class CommandWithOptionalPassword(click.Command):
+   def parse_args(self, ctx, args):
+      for i, a in enumerate(args):
+         if args[i] == '--passwd':
+            try:
+               passwd = args[i + 1] if not args[i + 1].startswith('--') else None
+            except IndexError:
+               passwd = None
+            if not passwd:
+               passwd = click.prompt('Password', hide_input=True)
+               args.insert(i + 1, passwd)
+      return super(CommandWithOptionalPassword, self).parse_args(ctx, args)
+
+@click.command(cls=CommandWithOptionalPassword)
 @click.option('--pwnd_account', default=None, help='Checks if account has been breached')
-@click.option('--pwnd_website', default=None, help='Checks if domain has been breached,e.g: adobe')
-@click.option('--passwd', default=None, help='Checks if password has been breached')
+@click.option('--pwnd_website', default=None, help='Checks if domain has been breached, e.g: adobe')
+@click.option('--passwd', help='Checks if password has been breached(will prompt if not supplied)')
 
 def main(pwnd_account, pwnd_website, passwd):
    if pwnd_account:
