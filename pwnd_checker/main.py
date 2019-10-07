@@ -2,17 +2,18 @@ import click
 import requests
 import json
 import time
+import os
 from json import JSONDecodeError
 
 from breached_passwd import BreachedPassword
 
 url = 'https://haveibeenpwned.com/api/v3/'
-api_key = 'YOUR-API-KEY'
-headers = {
+
+def get_headers(api_key):
+    return {
     "hibp-api-key": api_key,
     'user-agent': 'pwnd_checker',
 }
-
 
 def get_breachedaccount_response(path, headers):
     return get_response(path + '?truncateResponse=false', headers)
@@ -26,9 +27,9 @@ def get_response(path, headers):
     return response
 
 
-def breached_domain(pwnd_website):
+def breached_domain(api_key, pwnd_website):
     try:
-        response_json = get_response('breach/' + pwnd_website, headers)
+        response_json = get_response('breach/' + pwnd_website, get_headers(api_key))
         if response_json is None:
             print("{0} website hasn't been breached yet.".format(pwnd_website))
             return 0
@@ -46,9 +47,9 @@ def breached_domain(pwnd_website):
         click.secho(str(e), fg="red", bold=True)
 
 
-def breached_account(pwnd_account):
+def breached_account(api_key, pwnd_account):
     try:
-        response_json = get_breachedaccount_response('breachedaccount/' + pwnd_account, headers)
+        response_json = get_breachedaccount_response('breachedaccount/' + pwnd_account, get_headers(api_key))
         if response_json is not None and response_json.status_code == requests.codes.unauthorized:
             click.secho("Error getting breached accounts", fg='red', bold=True)
             return 1
@@ -85,14 +86,17 @@ class CommandWithOptionalPassword(click.Command):
 
 
 @click.command(cls=CommandWithOptionalPassword)
+@click.option('--api_key', default=None, help='Your API-key, if needed (or via HIBP_API_KEY environment variable)')
 @click.option('--pwnd_account', default=None, help='Checks if account has been breached')
 @click.option('--pwnd_website', default=None, help='Checks if domain has been breached, e.g: adobe')
 @click.option('--passwd', help='Checks if password has been breached(will prompt if not supplied)')
-def main(pwnd_account, pwnd_website, passwd):
+def main(api_key, pwnd_account, pwnd_website, passwd):
+    api_key = api_key or os.environ.get('HIBP_API_KEY')
+
     if pwnd_account:
-        breached_account(pwnd_account)
+        breached_account(api_key, pwnd_account)
     elif pwnd_website:
-        breached_domain(pwnd_website)
+        breached_domain(api_key, pwnd_website)
     elif passwd:
         # TODO: make passwd input as hidden
         breached_pass = BreachedPassword(headers)
