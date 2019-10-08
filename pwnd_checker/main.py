@@ -7,15 +7,18 @@ from json import JSONDecodeError
 
 from breached_passwd import BreachedPassword
 
-url = 'https://haveibeenpwned.com/api/v3/'
+api_version = '3'
+url = 'https://haveibeenpwned.com/api/v{}/'.format(api_version)
+
 
 def get_headers(api_key):
     return {
-    "hibp-api-key": api_key,
-    'user-agent': 'pwnd_checker',
-}
+        "hibp-api-key": api_key,
+        'user-agent': 'pwnd_checker',
+    }
 
-def get_breachedaccount_response(path, headers):
+
+def get_breached_account_response(path, headers):
     return get_response(path + '?truncateResponse=false', headers)
 
 
@@ -49,7 +52,7 @@ def breached_domain(api_key, pwnd_website):
 
 def breached_account(api_key, pwnd_account):
     try:
-        response_json = get_breachedaccount_response('breachedaccount/' + pwnd_account, get_headers(api_key))
+        response_json = get_breached_account_response('breachedaccount/' + pwnd_account, get_headers(api_key))
         if response_json is not None and response_json.status_code == requests.codes.unauthorized:
             click.secho("Error getting breached accounts", fg='red', bold=True)
             return 1
