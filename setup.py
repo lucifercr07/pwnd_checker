@@ -33,7 +33,7 @@ setup(
     include_package_data = True,
     install_requires=[
         "click==7.0",
-        "requests==2.20.1"
+        "requests==2.31.0"
     ] + (["colorama==0.3.3"] if "win" in sys.platform else []),
     entry_points={
         'console_scripts': [
